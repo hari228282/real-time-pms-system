@@ -1,0 +1,91 @@
+### Internal PMS — REST smoke tests (VS Code REST Client / IntelliJ HTTP Client)
+### Run top-to-bottom. Variables capture ids/tokens from earlier responses.
+
+@host = http://localhost:4000
+
+### Health
+GET {{host}}/health
+
+### Register (User A)
+# @name registerA
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Alice", "email": "alice@example.com", "password": "password123" }
+
+### Login (User A)
+# @name loginA
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "alice@example.com", "password": "password123" }
+
+@tokenA = {{loginA.response.body.data.token}}
+
+### Me
+GET {{host}}/api/auth/me
+Authorization: Bearer {{tokenA}}
+
+### Register (User B) — used to test membership
+# @name registerB
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Bob", "email": "bob@example.com", "password": "password123" }
+
+### Create a project
+# @name createProject
+POST {{host}}/api/projects
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{ "name": "Website Revamp", "description": "Q3 marketing site" }
+
+@projectId = {{createProject.response.body.data.project._id}}
+
+### List my projects
+GET {{host}}/api/projects
+Authorization: Bearer {{tokenA}}
+
+### Get one project
+GET {{host}}/api/projects/{{projectId}}
+Authorization: Bearer {{tokenA}}
+
+### Add Bob as a member
+POST {{host}}/api/projects/{{projectId}}/members
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{ "email": "bob@example.com", "role": "member" }
+
+### Create a task
+# @name createTask
+POST {{host}}/api/projects/{{projectId}}/tasks
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{ "title": "Design homepage", "description": "Hero + nav", "status": "todo" }
+
+@taskId = {{createTask.response.body.data.task._id}}
+
+### List tasks
+GET {{host}}/api/projects/{{projectId}}/tasks
+Authorization: Bearer {{tokenA}}
+
+### Move task: Todo -> In Progress (the core real-time action)
+PATCH {{host}}/api/tasks/{{taskId}}/status
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{ "status": "in_progress" }
+
+### Update task fields
+PATCH {{host}}/api/tasks/{{taskId}}
+Authorization: Bearer {{tokenA}}
+Content-Type: application/json
+
+{ "title": "Design homepage (v2)" }
+
+### Delete task
+DELETE {{host}}/api/tasks/{{taskId}}
+Authorization: Bearer {{tokenA}}

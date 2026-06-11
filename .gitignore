@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment files (NEVER commit real secrets)
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+backend-dev.log
+frontend-dev.log
+
+# Local dev-only helper scripts (not part of the deliverable)
+backend/add-bob.mjs
+frontend/verify-e2e.mjs
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/

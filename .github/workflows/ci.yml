@@ -1,0 +1,76 @@
+name: CI/CD
+
+# Branching strategy (see README): work on feature/* branches -> open a PR into main.
+# - PRs run lint + build (the quality gate; merge is blocked if these fail).
+# - A push to main (i.e. a merged PR) additionally runs the deploy job.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ---- Quality gate: lint + build both apps in parallel via a matrix ----
+  verify:
+    name: Lint & Build (${{ matrix.app }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [backend, frontend]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Backend has no build step; only the frontend produces a bundle.
+      - name: Build
+        if: matrix.app == 'frontend'
+        run: npm run build
+
+      # Placeholder for the test stage (kept in the pipeline so it's wired when tests land).
+      # - name: Test
+      #   run: npm test
+
+  # ---- Deploy: only on push to main, only after verify passes ----
+  deploy:
+    name: Deploy
+    needs: verify
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Self-managed VM: SSH in, pull, install, rebuild, reload via PM2.
+      # Secrets (VM_HOST, VM_USER, VM_SSH_KEY) are configured in repo settings.
+      - name: Deploy to VM over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/pms
+            git pull origin main
+            cd backend && npm ci && pm2 reload pms-api
+            cd ../frontend && npm ci && npm run build
+            sudo systemctl reload nginx
+
+      # If deploying to Render + Netlify instead, replace the step above with their
+      # deploy hooks, e.g.:
+      #   - run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+      #   - run: curl -fsSL -X POST "${{ secrets.NETLIFY_BUILD_HOOK }}"
