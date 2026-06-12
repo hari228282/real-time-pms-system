@@ -6,8 +6,8 @@ connected member sees it **instantly** over WebSockets, and anyone opening the p
 loads the latest **persisted** state.
 
 > **Live URLs** (fill in after deploy)
-> - Frontend: `https://<your-frontend-url>`
-> - Backend / API: `https://<your-backend-url>`
+> - Frontend: `https://real-time-pms-system.vercel.app`
+> - Backend / API: `https://real-time-pms-system.onrender.com`
 
 ---
 
