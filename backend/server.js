@@ -20,6 +20,7 @@ async function start() {
 
   server.listen(config.port, () => {
     console.log(`🚀 API + WebSocket listening on :${config.port} (${config.env})`);
+    console.log(`🌐 CORS allowed origins: ${config.corsOrigins.join(', ')}`);
   });
 
   setupGracefulShutdown(server);
