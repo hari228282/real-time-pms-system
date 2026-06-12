@@ -35,6 +35,10 @@ git push -u origin main
 4. **Connect → Drivers** → copy the string. It looks like:
    ```
    mongodb+srv://<user>:<password>@cluster0.xxxx.mongodb.net/pms?retryWrites=true&w=majority
+   mongodb+srv://hari228282_db_user:<db_password>@cluster0.rdjcaoo.mongodb.net/
+   mongodb+srv://hari228282_db_user:<db_password>@cluster0.rdjcaoo.mongodb.net/?appName=Cluster0
+   mongodb+srv://<db_username>:<db_password>@cluster0.rdjcaoo.mongodb.net/?appName=Cluster0
+   mongodb+srv://<db_username>:<db_password>@cluster0.rdjcaoo.mongodb.net/
    ```
    - Put your real user + password in.
    - Add **`/pms`** before the `?` (the database name).
@@ -121,3 +125,7 @@ Finally, put your real URLs into the main `README.md` under "Live URLs".
 - **First load is very slow (~40s)** → normal. Render free tier "sleeps" when idle and wakes on the first request.
 - **Backend won't start** → check `MONGO_URI` (right password? IP `0.0.0.0/0` allowed?) and `REDIS_URL` are correct in Render env vars.
 - **Login works but real-time doesn't** → `VITE_SOCKET_URL` is wrong/missing on Vercel.
+
+
+pMs-SyStem
+hari228282_db_user
